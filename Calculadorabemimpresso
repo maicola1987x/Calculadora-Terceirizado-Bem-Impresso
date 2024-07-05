@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Custo de Banner, Faixa, Lona com Ilhós e Etiquetas Adesivas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+        #espacamentoIlhos, #quantidadeEtiquetas, #dimensoesEtiquetas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Custo</h1>
+        <label for="tipo">Selecione o tipo:</label>
+        <select id="tipo" onchange="toggleCamposEspecificos()">
+            <option value="banner">Banner</option>
+            <option value="faixa">Faixa</option>
+            <option value="lona">Lona com Ilhós</option>
+            <option value="etiqueta">Etiqueta Adesiva</option>
+        </select>
+        <div id="dimensoesImpressao">
+            <label for="largura">Largura (em centímetros):</label>
+            <input type="number" id="largura" step="0.1" min="1">
+            <label for="altura">Altura (em centímetros):</label>
+            <input type="number" id="altura" step="0.1" min="1">
+        </div>
+        <div id="espacamentoIlhos">
+            <label for="espacamento">Espaçamento dos ilhós (em centímetros):</label>
+            <input type="number" id="espacamento" step="1" min="1" value="30">
+        </div>
+        <div id="dimensoesEtiquetas">
+            <label for="larguraEtiqueta">Largura da Etiqueta (em centímetros):</label>
+            <input type="number" id="larguraEtiqueta" step="0.1" min="1">
+            <label for="alturaEtiqueta">Altura da Etiqueta (em centímetros):</label>
+            <input type="number" id="alturaEtiqueta" step="0.1" min="1">
+        </div>
+        <div id="quantidadeEtiquetas">
+            <label for="quantidade">Quantidade de Etiquetas:</label>
+            <input type="number" id="quantidade" step="1" min="1">
+        </div>
+        <button onclick="calcularCusto()">Calcular Custo</button>
+        <div class="result" id="resultado"></div>
+    </div>
+    <script>
+        function toggleCamposEspecificos() {
+            const tipo = document.getElementById('tipo').value;
+            const espacamentoIlhos = document.getElementById('espacamentoIlhos');
+            const quantidadeEtiquetas = document.getElementById('quantidadeEtiquetas');
+            const dimensoesEtiquetas = document.getElementById('dimensoesEtiquetas');
+            const dimensoesImpressao = document.getElementById('dimensoesImpressao');
+
+            espacamentoIlhos.style.display = 'none';
+            quantidadeEtiquetas.style.display = 'none';
+            dimensoesEtiquetas.style.display = 'none';
+            dimensoesImpressao.style.display = 'block';
+
+            if (tipo === 'lona') {
+                espacamentoIlhos.style.display = 'block';
+            } else if (tipo === 'etiqueta') {
+                dimensoesImpressao.style.display = 'none';
+                quantidadeEtiquetas.style.display = 'block';
+                dimensoesEtiquetas.style.display = 'block';
+            }
+        }
+
+        function calcularCusto() {
+            const tipo = document.getElementById('tipo').value;
+            const precoImpressaoM2 = 35.90;
+            const precoAcabamentoM = 7.50;
+            const precoSoldaM = 2.90;
+            const precoIlhosUnidade = 0.85;
+            const precoEtiquetaM2 = 43.90;
+            const custoMinimoEtiqueta = 28.85;
+
+            let area = 0;
+            let custoImpressao = 0;
+            let custoAcabamento = 0;
+            let ilhos = 0;
+
+            if (tipo === 'etiqueta') {
+                const larguraEtiquetaCm = parseFloat(document.getElementById('larguraEtiqueta').value);
+                const alturaEtiquetaCm = parseFloat(document.getElementById('alturaEtiqueta').value);
+                const quantidade = parseFloat(document.getElementById('quantidade').value);
+                const larguraEtiquetaM = (larguraEtiquetaCm + 0.4) / 100; // Adicionando 2mm de sangramento em cada lado
+                const alturaEtiquetaM = (alturaEtiquetaCm + 0.4) / 100; // Adicionando 2mm de sangramento em cada lado
+                const areaEtiqueta = larguraEtiquetaM * alturaEtiquetaM;
+                area = areaEtiqueta * quantidade;
+                const etiquetasPorM2 = Math.floor(1 / areaEtiqueta);
+
+                area = Math.max(area, custoMinimoEtiqueta / precoEtiquetaM2);
+                custoImpressao = area * precoEtiquetaM2;
+
+                document.getElementById('resultado').textContent = `Custo Total: R$ ${custoImpressao.toFixed(2)}\nUnidades por metro quadrado: ${etiquetasPorM2}`;
+                return;
+            } else {
+                const larguraCm = parseFloat(document.getElementById('largura').value);
+                const alturaCm = parseFloat(document.getElementById('altura').value);
+                const larguraM = larguraCm / 100;
+                const alturaM = alturaCm / 100;
+                area = larguraM * alturaM;
+
+                if (tipo === 'banner') {
+                    const acabamento = 2 * larguraM; // Acabamento em cima e embaixo
+                    custoAcabamento = acabamento * precoAcabamentoM;
+                    area = Math.max(area, 0.5); // Valor mínimo de 0.5 m²
+                    custoAcabamento = Math.max(custoAcabamento, precoAcabamentoM); // Valor mínimo de 1 metro linear
+                } else if (tipo === 'faixa') {
+                    const acabamento = 2 * alturaM; // Acabamento nas laterais
+                    custoAcabamento = acabamento * precoAcabamentoM;
+                    area = Math.max(area, 0.5); // Valor mínimo de 0.5 m²
+                    custoAcabamento = Math.max(custoAcabamento, precoAcabamentoM); // Valor mínimo de 1 metro linear
+                } else if (tipo === 'lona') {
+                    const acabamento = 2 * (larguraM + alturaM); // Solda em volta de toda a impressão
+                    custoAcabamento = acabamento * precoSoldaM;
+                    const espacamentoCm = parseFloat(document.getElementById('espacamento').value);
+                    const espacamentoM = espacamentoCm / 100;
+                    const perimetro = 2 * (larguraM + alturaM);
+                    ilhos = Math.ceil(perimetro / espacamentoM);
+                    const custoIlhos = ilhos * precoIlhosUnidade;
+                    custoAcabamento += custoIlhos;
+                    area = Math.max(area, 0.5); // Valor mínimo de 0.5 m²
+                    custoAcabamento = Math.max(custoAcabamento, precoSoldaM); // Valor mínimo de 1 metro linear de solda
+                }
+
+                custoImpressao = area * precoImpressaoM2;
+            }
+
+            const custoTotal = custoImpressao + custoAcabamento;
+            document.getElementById('resultado').textContent = `Custo Total: R$ ${custoTotal.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
